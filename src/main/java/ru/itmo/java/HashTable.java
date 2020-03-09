@@ -95,7 +95,7 @@ public class HashTable {
     }
 
     int threshold() {
-        return (int) Math.min(table.length * (loadFactor + 0.1), table.length * (loadFactor * 0.8 + 0.2));
+        return (int) (table.length * loadFactor);
     }
 
     private static class Entry {
