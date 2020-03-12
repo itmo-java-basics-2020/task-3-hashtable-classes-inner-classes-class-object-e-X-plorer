@@ -4,11 +4,14 @@ import java.util.Map;
 
 public class HashTable {
 
-    private final LoopTerminatorPredicate additionPredicate = (currentIndex, table, keyToAdd) ->
-            table[currentIndex % table.length] != null && !table[currentIndex % table.length].key.equals(keyToAdd);
-    private final LoopTerminatorPredicate getPredicate = (currentIndex, table, keyToFind) ->
+    private static final float LOAD_FACTOR_DEVIATION = 0.1f;
+    private static final float LOAD_FACTOR_MAX_VALUE = 0.95f;
+
+    private static final LoopTerminatorPredicate additionPredicate = (currentIndex, table, keyToAdd) ->
+            table[currentIndex % table.length] != null && !table[currentIndex % table.length].deleted;
+    private static final LoopTerminatorPredicate getPredicate = (currentIndex, table, keyToFind) ->
             table[currentIndex % table.length] != null && (!table[currentIndex % table.length].key.equals(keyToFind) || table[currentIndex % table.length].deleted);
-    private final LoopTerminatorPredicate removePredicate = (currentIndex, table, keyToFind) ->
+    private static final LoopTerminatorPredicate removePredicate = (currentIndex, table, keyToFind) ->
             table[currentIndex % table.length] != null && !table[currentIndex % table.length].key.equals(keyToFind);
 
     private Entry[] table;
@@ -39,7 +42,7 @@ public class HashTable {
     }
 
     private int find(Object key, Entry[] table, LoopTerminatorPredicate predicate) {
-        int hc = key.hashCode() * 0x7ffffff, step = 0;
+        int hc = key.hashCode() * Integer.MAX_VALUE, step = 0;
         do {
             hc += step * step;
             if (hc < 0) {
@@ -52,7 +55,7 @@ public class HashTable {
     }
 
     private boolean checkCapacityAndExpand() {
-        if (count + dirty < threshold()) {
+        if (count < threshold() && count + dirty < table.length) {
             return false;
         }
         Entry[] newTable = new Entry[table.length * 2];
@@ -63,22 +66,24 @@ public class HashTable {
             newTable[find(entry.key, newTable, additionPredicate)] = entry;
         }
         table = newTable;
+        dirty = 0;
         return true;
     }
 
     Object put(Object key, Object value) {
-        checkCapacityAndExpand();
-        int index = find(key, Operation.PUT);
+        int index = find(key, Operation.GET);
         Object prev = null;
-        if (table[index] == null) {
-            count++;
-        } else if (table[index].deleted) {
-            dirty--;
-            count++;
-        } else {
+        if (table[index] != null) {
             prev = table[index].value;
+        } else {
+            index = find(key, Operation.PUT);
+            count++;
+            if (table[index] != null) {
+                dirty--;
+            }
         }
         table[index] = new Entry(key, value);
+        checkCapacityAndExpand();
         return prev;
     }
 
@@ -106,7 +111,7 @@ public class HashTable {
     }
 
     int threshold() {
-        return (int) Math.min(table.length * loadFactor, table.length * 0.8 + 0.2);
+        return (int) (table.length * Math.min(loadFactor + LOAD_FACTOR_DEVIATION, LOAD_FACTOR_MAX_VALUE));
     }
 
     private static class Entry {
