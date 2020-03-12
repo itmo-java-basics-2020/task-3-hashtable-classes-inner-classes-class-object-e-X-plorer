@@ -6,6 +6,9 @@ public class HashTable {
 
     private static final float LOAD_FACTOR_DEVIATION = 0.1f;
     private static final float LOAD_FACTOR_MAX_VALUE = 0.95f;
+    private static final float DEFAULT_LOAD_FACTOR = 0.5f;
+
+    private enum Operation {PUT, GET, REMOVE}
 
     private static final LoopTerminatorPredicate additionPredicate = (currentIndex, table, keyToAdd) ->
             table[currentIndex % table.length] != null && !table[currentIndex % table.length].deleted;
@@ -17,7 +20,7 @@ public class HashTable {
     private Entry[] table;
     private int count = 0;
     private int dirty = 0;
-    private float loadFactor = 0.5f;
+    private float loadFactor = DEFAULT_LOAD_FACTOR;
 
     public HashTable(int initialCapacity) {
         table = new Entry[initialCapacity];
@@ -128,6 +131,4 @@ public class HashTable {
     private interface LoopTerminatorPredicate {
         boolean operation(int currentIndex, Entry[] table, Object key);
     }
-
-    private enum Operation {PUT, GET, REMOVE}
 }
