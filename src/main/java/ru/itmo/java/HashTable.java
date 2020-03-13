@@ -23,11 +23,19 @@ public class HashTable {
     private float loadFactor = DEFAULT_LOAD_FACTOR;
 
     public HashTable(int initialCapacity) {
+        if (initialCapacity < 1) {
+            System.out.println("Invalid initial capacity. Capacity of 1 will be used.");
+            initialCapacity = 1;
+        }
         table = new Entry[initialCapacity];
     }
 
     public HashTable(int initialCapacity, float loadFactor) {
         this(initialCapacity);
+        if (loadFactor < 0 || loadFactor > 1) {
+            System.out.println(String.format("Invalid loadFactor. Fallback value of %.2f will be used.", DEFAULT_LOAD_FACTOR));
+            loadFactor = DEFAULT_LOAD_FACTOR;
+        }
         this.loadFactor = loadFactor;
     }
 
