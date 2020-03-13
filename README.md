@@ -1,6 +1,6 @@
 # task4-hashtable
 
-[![Build Status](https://travis-ci.com/itmo-java-basics-2020/task3-hashtable-classes-inner-classes-class-object-e-X-plorer.svg?branch=HashTable)](https://travis-ci.com/itmo-java-basics-2020/task3-hashtable-classes-inner-classes-class-object-e-X-plorer)
+[![Build Status](https://travis-ci.com/itmo-java-basics-2020/task-3-hashtable-classes-inner-classes-class-object-e-X-plorer.svg?branch=HashTable)](https://travis-ci.com/itmo-java-basics-2020/task-3-hashtable-classes-inner-classes-class-object-e-X-plorer)
 
 
 Требуется разработать реализацию ассоциативного массива - структуры данных, которая хранит пары (ключ - значение) - на основе хеш-таблицы.
