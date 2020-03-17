@@ -9,11 +9,9 @@ public class HashTable {
     private static final float DEFAULT_LOAD_FACTOR = 0.5f;
 
     private static final LoopTerminatorPredicate ADDITION_PREDICATE = (currentIndex, table, keyToAdd) ->
-            table[currentIndex % table.length] != null && !table[currentIndex % table.length].deleted;
+            table[currentIndex % table.length] != null && !table[currentIndex % table.length].isDeleted();
     private static final LoopTerminatorPredicate GET_PREDICATE = (currentIndex, table, keyToFind) ->
-            table[currentIndex % table.length] != null && (table[currentIndex % table.length].deleted || !table[currentIndex % table.length].key.equals(keyToFind));
-    private static final LoopTerminatorPredicate REMOVE_PREDICATE = (currentIndex, table, keyToFind) ->
-            table[currentIndex % table.length] != null && !table[currentIndex % table.length].key.equals(keyToFind);
+            table[currentIndex % table.length] != null && (table[currentIndex % table.length].isDeleted() || !table[currentIndex % table.length].key.equals(keyToFind));
 
     private Entry[] table;
     private int count = 0;  /* Показывает, сколько ячеек таблицы заполнено реальными значениями */
@@ -90,14 +88,15 @@ public class HashTable {
     }
 
     public Object remove(Object key) {
-        int index = find(key, Operation.REMOVE);
-        if (table[index] == null || table[index].deleted) {
+        int index = find(key, Operation.GET);
+        if (table[index] == null) {
             return null;
         }
-        table[index].deleted = true;
+        Object prev = table[index].value;
+        table[index] = Entry.DELETED;
         count--;
         dirty++;
-        return table[index].value;
+        return prev;
     }
 
     public int size() {
@@ -114,8 +113,6 @@ public class HashTable {
                 return find(key, table, ADDITION_PREDICATE);
             case GET:
                 return find(key, table, GET_PREDICATE);
-            case REMOVE:
-                return find(key, table, REMOVE_PREDICATE);
             default:
                 return -1;
         }
@@ -162,7 +159,7 @@ public class HashTable {
         }
         Entry[] newTable = new Entry[table.length * 2];
         for (Entry entry : table) {
-            if (entry == null || entry.deleted) {
+            if (entry == null || entry.isDeleted()) {
                 continue;
             }
             newTable[find(entry.key, newTable, ADDITION_PREDICATE)] = entry;
@@ -177,17 +174,19 @@ public class HashTable {
      * внутренние классы.
      */
     private enum Operation {
-        PUT, GET, REMOVE
+        PUT, GET
     }
 
     private static class Entry {
+
+        private static final Entry DELETED = new Entry(null, null);
+
         private final Object key;
         private final Object value;
 
-        /* Удалить это поле нельзя, так как в данной реализации необходимо иметь информацию
-         * о ключах удаленных элементов.
-         */
-        private boolean deleted = false;
+        public boolean isDeleted() {
+            return this == DELETED;
+        }
 
         public Entry(Object key, Object value) {
             this.key = key;
