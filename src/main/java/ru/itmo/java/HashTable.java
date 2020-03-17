@@ -50,7 +50,7 @@ public class HashTable {
          * и структур данных", но, как оказались, те тесты такую ситуацию не покрывали. Похожая логика,
          * описанная в интернете для операции добавления, также не работала.
          */
-        /*int index*/Entry entry = find(key, Operation.GET);
+        int index = find(key, Operation.GET);
         Object prev = null;
         if (table[index] != null) {
             prev = table[index].value;
@@ -73,6 +73,15 @@ public class HashTable {
     }
 
     public Object get(Object key) {
+
+        /* В случае, если нужно лишь получить значение, хранящееся по данному ключу, можно создать
+         * метод поиска, который будет сразу возвращать это значение или пару ключ-значение.
+         * Однако в таком случае придется создавать дополнительный метод, большая часть логики
+         * которого будет совпадать с существующим find. При этом нельзя сделать так, чтобы find
+         * для put() и remove() возвращали сразу пару, так как они требуют изменения хранящихся
+         * в таблице значений. Если сделать key и value изменяетмыми значениями в Entry, то это
+         * будет возможно. Если так будет лучше, то я могу так сделать.
+         */
         int index = find(key, Operation.GET);
         if (table[index] == null) {
             return null;
@@ -99,7 +108,7 @@ public class HashTable {
         return (int) (table.length * Math.min(loadFactor + LOAD_FACTOR_DEVIATION, LOAD_FACTOR_MAX_VALUE));
     }
 
-    private Entry find(Object key, Operation operation) {
+    private int find(Object key, Operation operation) {
         switch (operation) {
             case PUT:
                 return find(key, table, ADDITION_PREDICATE);
@@ -108,11 +117,11 @@ public class HashTable {
             case REMOVE:
                 return find(key, table, REMOVE_PREDICATE);
             default:
-                return null;
+                return -1;
         }
     }
 
-    private Entry find(Object key, Entry[] table, LoopTerminatorPredicate predicate) {
+    private int find(Object key, Entry[] table, LoopTerminatorPredicate predicate) {
         int hc = key.hashCode() * Integer.MAX_VALUE;
         int step = 0;
         do {
@@ -132,7 +141,7 @@ public class HashTable {
             step++;
         } while (predicate.operation(hc, table, key));
 
-        return table[hc % table.length];
+        return hc % table.length;
     }
 
     private boolean checkCapacityAndExpand() {
