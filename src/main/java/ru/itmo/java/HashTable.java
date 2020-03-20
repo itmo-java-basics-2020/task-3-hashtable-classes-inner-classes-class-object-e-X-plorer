@@ -9,9 +9,9 @@ public class HashTable {
     private static final float DEFAULT_LOAD_FACTOR = 0.5f;
 
     private static final LoopTerminatorPredicate ADDITION_PREDICATE = (currentIndex, table, keyToAdd) ->
-            table[currentIndex % table.length] != null && !table[currentIndex % table.length].isDeleted();
+            table[currentIndex] != null && !table[currentIndex].isDeleted();
     private static final LoopTerminatorPredicate GET_PREDICATE = (currentIndex, table, keyToFind) ->
-            table[currentIndex % table.length] != null && (table[currentIndex % table.length].isDeleted() || !table[currentIndex % table.length].key.equals(keyToFind));
+            table[currentIndex] != null && (table[currentIndex].isDeleted() || !table[currentIndex].key.equals(keyToFind));
 
     private Entry[] table;
     private int count = 0;  /* Показывает, сколько ячеек таблицы заполнено реальными значениями */
@@ -119,7 +119,7 @@ public class HashTable {
     }
 
     private int find(Object key, Entry[] table, LoopTerminatorPredicate predicate) {
-        int hc = key.hashCode() * Integer.MAX_VALUE;
+        int hc = key.hashCode();
         int step = 0;
         do {
 
@@ -136,7 +136,7 @@ public class HashTable {
                 hc -= Integer.MIN_VALUE;
             }
             step++;
-        } while (predicate.operation(hc, table, key));
+        } while (predicate.operation(hc % table.length, table, key));
 
         return hc % table.length;
     }
